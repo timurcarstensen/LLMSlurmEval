@@ -139,15 +139,8 @@ def main():
         # use the provided model
         model_paths = [args.model]
 
-    # Enumerate all model iterations upfront
-    all_model_iterations = []
-    for model_path in model_paths:
-        iterations = enumerate_model_iterations(model_path)
-        all_model_iterations.extend(iterations)
-    
-    print(f"Found {len(all_model_iterations)} total model iterations across {len(model_paths)} model paths")
-
-    # Create separate jobs for each model-iteration-task-n-shot combination
+    # TODO allow to configure dispatch stategy
+    # loop over all models first, then all tasks
     python_args = [
         f"{task} {n_fewshot} {model_iteration}"
         for model_iteration in all_model_iterations
