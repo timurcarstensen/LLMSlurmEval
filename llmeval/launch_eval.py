@@ -15,6 +15,24 @@ def load_tasks_from_path(path):
             n_fewshot_to_tasks[int(n_fewshot.strip())].append(task.strip())
     return n_fewshot_to_tasks
 
+
+def enumerate_model_iterations(model_path_or_name):
+    """
+    If model_path_or_name is a directory, find all model.safetensors files recursively.
+    Otherwise, return the model path as-is.
+    """
+    if os.path.isdir(model_path_or_name):
+        # Find all model.safetensors files recursively
+        safetensor_files = []
+        for root, dirs, files in os.walk(model_path_or_name):
+            if "model.safetensors" in files:
+                safetensor_files.append(root)
+        return safetensor_files
+    else:
+        # It's a single model (HuggingFace model name or specific path)
+        return [model_path_or_name]
+
+
 def main():
     # TODO make tasks configurable
     parser = argparse.ArgumentParser()
@@ -121,11 +139,18 @@ def main():
         # use the provided model
         model_paths = [args.model]
 
-    # TODO allow to configure dispatch stategy
-    # loop over all models first, then all tasks
+    # Enumerate all model iterations upfront
+    all_model_iterations = []
+    for model_path in model_paths:
+        iterations = enumerate_model_iterations(model_path)
+        all_model_iterations.extend(iterations)
+    
+    print(f"Found {len(all_model_iterations)} total model iterations across {len(model_paths)} model paths")
+
+    # Create separate jobs for each model-iteration-task-n-shot combination
     python_args = [
-        f"{task} {n_fewshot} {model_path}"
-        for model_path in model_paths
+        f"{task} {n_fewshot} {model_iteration}"
+        for model_iteration in all_model_iterations
         for n_fewshot, tasks in n_fewshot_to_tasks.items()
         for task in tasks
     ]

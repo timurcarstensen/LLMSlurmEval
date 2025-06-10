@@ -44,6 +44,8 @@ per line.
 
 which will launch all evaluations.
 
+**Note on Model Iterations**: If you provide a directory path as a model, the system will automatically find all `model.safetensors` files recursively within that directory and schedule each one as a separate SLURM job. This prevents timeouts when evaluating models with many iterations (e.g., 1T models) on long-running tasks (e.g., hellaswag 10-shot). Each model-iteration-task-n-shot combination is scheduled as an independent job.
+
 Results will be logged in wandb but you will have to sync them as nodes are cut from internet.
 Once results are in WANDB, you can do the following to get the table of all results (you should update the list of 
 jobids manually).
